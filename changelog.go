@@ -1,4 +1,4 @@
-package ghch
+package gbch
 
 import (
 	"bufio"
@@ -9,10 +9,12 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/google/go-github/github"
+	"fmt"
+
+	backlog "github.com/vvatanabe/go-backlog/backlog/v2"
 )
 
-// Changelog contains Sectionst
+// Changelog contains Sections
 type Changelog struct {
 	Sections []Section `json:"Sections"`
 }
@@ -39,19 +41,21 @@ func insertNewChangelog(orig []byte, section string) string {
 
 // Section contains changes between two revisions
 type Section struct {
-	PullRequests []*github.PullRequest `json:"pull_requests"`
-	FromRevision string                `json:"from_revision"`
-	ToRevision   string                `json:"to_revision"`
-	ChangedAt    time.Time             `json:"changed_at"`
-	Owner        string                `json:"owner"`
-	Repo         string                `json:"repo"`
-	HTMLURL      string                `json:"html_url"`
+	PullRequests []*backlog.PullRequest `json:"pull_requests"`
+	FromRevision string                 `json:"from_revision"`
+	ToRevision   string                 `json:"to_revision"`
+	ChangedAt    time.Time              `json:"changed_at"`
+	Project      string                 `json:"project"`
+	Repo         string                 `json:"repo"`
+	BaseURL      string                 `json:"-"`
+	HTMLURL      string                 `json:"html_url"`
+	ShowUniqueID bool                   `json:"-"`
 }
 
 var tmplStr = `{{$ret := . -}}
 ## [{{.ToRevision}}]({{.HTMLURL}}/compare/{{.FromRevision}}...{{.ToRevision}}) ({{.ChangedAt.Format "2006-01-02"}})
 {{range .PullRequests}}
-* {{.Title}} [#{{.Number}}]({{.HTMLURL}}) ([{{.User.Login}}]({{.User.HTMLURL}}))
+* {{.Summary}} [#{{.Number}}]({{$ret.HTMLURL}}/pullRequests/{{.Number}}) ({{.UpdatedUser.Name}}){{if and ($ret.ShowUniqueID) (.UpdatedUser.NulabAccount) }} @{{.UpdatedUser.NulabAccount.UniqueID}}{{end}}
 {{- end}}`
 
 var mdTmpl *template.Template
@@ -73,34 +77,33 @@ func (rs Section) toMkdn() (string, error) {
 	return b.String(), nil
 }
 
-func (gh *Ghch) getSection(ctx context.Context, from, to string) (Section, error) {
+func (gb *Gbch) getSection(ctx context.Context, from, to string) (Section, error) {
 	if from == "" {
-		from, _ = gh.cmd("rev-list", "--max-parents=0", "HEAD")
+		from, _ = gb.cmd("rev-list", "--max-parents=0", "HEAD")
 		from = strings.TrimSpace(from)
 		if len(from) > 12 {
 			from = from[:12]
 		}
 	}
-	r, err := gh.mergedPRs(ctx, from, to)
+	r, err := gb.mergedPRs(ctx, from, to)
 	if err != nil {
 		return Section{}, err
 	}
-	t, err := gh.getChangedAt(to)
+	t, err := gb.getChangedAt(to)
 	if err != nil {
 		return Section{}, err
 	}
-	owner, repo := gh.ownerAndRepo()
-	htmlURL, err := gh.htmlURL(ctx, owner, repo)
-	if err != nil {
-		return Section{}, err
-	}
+
 	return Section{
 		PullRequests: r,
 		FromRevision: from,
 		ToRevision:   to,
 		ChangedAt:    t,
-		Owner:        owner,
-		Repo:         repo,
-		HTMLURL:      htmlURL,
+		Project:      gb.ProjectKey,
+		Repo:         gb.RepoName,
+
+		BaseURL:      gb.BaseURL,
+		HTMLURL:      fmt.Sprintf("%s/git/%s/%s", gb.BaseURL, gb.ProjectKey, gb.RepoName),
+		ShowUniqueID: gb.ShowUniqueID,
 	}, nil
 }
