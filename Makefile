@@ -1,6 +1,6 @@
 VERSION = $(shell godzil show-version)
 CURRENT_REVISION = $(shell git rev-parse --short HEAD)
-BUILD_LDFLAGS = "-s -w -X github.com/Songmu/ghch.revision=$(CURRENT_REVISION)"
+BUILD_LDFLAGS = "-s -w -X github.com/vvatanabe/gbch.revision=$(CURRENT_REVISION)"
 ifdef update
   u=-u
 endif
@@ -36,16 +36,16 @@ cover: devel-deps
 
 .PHONY: build
 build: deps
-	go build -ldflags=$(BUILD_LDFLAGS) ./cmd/ghch
+	go build -ldflags=$(BUILD_LDFLAGS) ./cmd/gbch
 
 .PHONY: install
 install: deps
-	go install -ldflags=$(BUILD_LDFLAGS) ./cmd/ghch
+	go install -ldflags=$(BUILD_LDFLAGS) ./cmd/gbch
 
 .PHONY: crossbuild
 crossbuild: devel-deps
 	goxz -pv=v$(VERSION) -build-ldflags=$(BUILD_LDFLAGS) \
-	  -d=./dist/v$(VERSION) ./cmd/ghch
+	  -d=./dist/v$(VERSION) ./cmd/gbch
 
 .PHONY: release
 release:

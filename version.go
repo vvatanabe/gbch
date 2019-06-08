@@ -1,4 +1,4 @@
-package ghch
+package gbch
 
 const version = "0.0.0"
 
