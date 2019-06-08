@@ -199,42 +199,42 @@ func (gb *Gbch) getRemote() string {
 	return "origin"
 }
 
-type RemoteURL struct {
+type remoteURL struct {
 	Protocol string
 	Host     string
 	Port     string
 	Path     string
 }
 
-func (gb *Gbch) getRemoteURL() (*RemoteURL, error) {
+func (gb *Gbch) getRemoteURL() (*remoteURL, error) {
 	out, _ := gb.cmd("remote", "-v")
 	remotes := strings.Split(out, "\n")
 
 	remote := gb.getRemote()
-	var remoteURL string
+	var u string
 	for _, r := range remotes {
 		fields := strings.Fields(r)
 		if len(fields) > 1 && fields[0] == remote {
-			remoteURL = fields[1]
+			u = fields[1]
 			break
 		}
 	}
 
-	var ep *RemoteURL
-	if isHTTP(remoteURL) {
-		ep = toRemoteURLFromHTTP(remoteURL)
-	} else if isSSH(remoteURL) {
-		ep = toRemoteURLFromSSH(remoteURL)
+	var remoteURL *remoteURL
+	if isHTTP(u) {
+		remoteURL = toRemoteURLFromHTTP(u)
+	} else if isSSH(u) {
+		remoteURL = toRemoteURLFromSSH(u)
 	} else {
-		return ep, errors.New("could not be used protocol except http and ssh")
+		return remoteURL, errors.New("could not be used protocol except http and ssh")
 	}
 
-	return ep, nil
+	return remoteURL, nil
 }
 
 var repoURLReg = regexp.MustCompile(`([^/:]+)/([^/]+?)(?:\.git)?$`)
 
-func (gb *Gbch) projectKeyAndRepo(remoteURL *RemoteURL) (projectKey, repo string) {
+func (gb *Gbch) projectKeyAndRepo(remoteURL *remoteURL) (projectKey, repo string) {
 	if matches := repoURLReg.FindStringSubmatch(remoteURL.Path); len(matches) > 2 {
 		return matches[1], matches[2]
 	}
@@ -243,7 +243,7 @@ func (gb *Gbch) projectKeyAndRepo(remoteURL *RemoteURL) (projectKey, repo string
 
 var serviceDomains = []string{"backlog.jp", "backlog.com", "backlogtool.com"}
 
-func (gb *Gbch) spaceDomain(remoteURL *RemoteURL) string {
+func (gb *Gbch) spaceDomain(remoteURL *remoteURL) string {
 
 	var isBacklogDomain bool
 	for _, d := range serviceDomains {
@@ -361,9 +361,9 @@ func isHTTP(str string) bool {
 	return err == nil && u.Scheme == "https" && u.Host != ""
 }
 
-func toRemoteURLFromHTTP(str string) *RemoteURL {
+func toRemoteURLFromHTTP(str string) *remoteURL {
 	u, _ := url.Parse(str)
-	return &RemoteURL{
+	return &remoteURL{
 		Protocol: u.Scheme,
 		Host:     u.Host,
 		Port:     u.Port(),
@@ -371,15 +371,15 @@ func toRemoteURLFromHTTP(str string) *RemoteURL {
 	}
 }
 
-var sshUrlReg = regexp.MustCompile(`^(?:(?P<user>[^@]+)@)?(?P<host>[^:\s]+):(?:(?P<port>[0-9]{1,5})/)?(?P<path>[^\\].*)$`)
+var sshURLReg = regexp.MustCompile(`^(?:(?P<user>[^@]+)@)?(?P<host>[^:\s]+):(?:(?P<port>[0-9]{1,5})/)?(?P<path>[^\\].*)$`)
 
 func isSSH(str string) bool {
-	return sshUrlReg.MatchString(str)
+	return sshURLReg.MatchString(str)
 }
 
-func toRemoteURLFromSSH(str string) *RemoteURL {
-	m := sshUrlReg.FindStringSubmatch(str)
-	return &RemoteURL{
+func toRemoteURLFromSSH(str string) *remoteURL {
+	m := sshURLReg.FindStringSubmatch(str)
+	return &remoteURL{
 		Protocol: "ssh",
 		Host:     m[2],
 		Port:     m[3],
