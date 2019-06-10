@@ -55,7 +55,7 @@ type Section struct {
 var tmplStr = `{{$ret := . -}}
 ## [{{.ToRevision}}]({{.HTMLURL}}/compare/{{.FromRevision}}...{{.ToRevision}}) ({{.ChangedAt.Format "2006-01-02"}})
 {{range .PullRequests}}
-* {{.Summary}} [#{{.Number}}]({{$ret.HTMLURL}}/pullRequests/{{.Number}}) ({{.UpdatedUser.Name}}){{if and ($ret.ShowUniqueID) (.UpdatedUser.NulabAccount) }} @{{.UpdatedUser.NulabAccount.UniqueID}}{{end}}
+* {{.Summary}} [#{{.Number}}]({{$ret.HTMLURL}}/pullRequests/{{.Number}}) ([{{.CreatedUser.Name}}]({{$ret.BaseURL}}/user/{{.CreatedUser.UserID}})){{if and ($ret.ShowUniqueID) (.CreatedUser.NulabAccount)}} @{{.CreatedUser.NulabAccount.UniqueID}}{{end}}
 {{- end}}`
 
 var mdTmpl *template.Template
