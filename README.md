@@ -1,6 +1,9 @@
 gbch
 =======
 
+[![Build Status](https://travis-ci.org/vvatanabe/gbch.svg?branch=master)](https://travis-ci.org/vvatanabe/gbch)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](http://www.opensource.org/licenses/mit-license.php)
+
 ## Description
 
 Generate changelog from git history, tags and merged pull requests for Backlog
@@ -61,10 +64,6 @@ gbch's origin is [github.com/Songmu/ghch](https://github.com/Songmu/ghch). I app
 ## Bugs and Feedback
 
 For bugs, questions and discussions please use the GitHub Issues.
-
-## License
-
-[MIT License](http://www.opensource.org/licenses/mit-license.php)
 
 ## Author
 
