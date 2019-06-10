@@ -276,9 +276,10 @@ func (gb *Gbch) mergedPRs(ctx context.Context, from, to string) (prs []*backlog.
 	if err != nil {
 		return
 	}
-	prs = make([]*backlog.PullRequest, 0, len(prlogs))
+	prsWithNil := make([]*backlog.PullRequest, len(prlogs))
 	g := errsgroup.NewGroup(errsGroupLimitSize)
-	for _, v := range prlogs {
+	for i, v := range prlogs {
+		index := i
 		prlog := v
 		g.Go(func() (err error) {
 			pr, resp, err := gb.client.PullRequests.GetPullRequest(ctx, gb.ProjectKey, gb.RepoName, prlog.num)
@@ -292,12 +293,17 @@ func (gb *Gbch) mergedPRs(ctx context.Context, from, to string) (prs []*backlog.
 			if pr.Branch != prlog.branch {
 				return
 			}
-			prs = append(prs, pr)
+			prsWithNil[index] = pr
 			return
 		})
 	}
 	for _, e := range g.Wait() {
 		err = e
+	}
+	for _, pr := range prsWithNil {
+		if pr != nil {
+			prs = append(prs, pr)
+		}
 	}
 	return
 }
