@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.2.1](https://github.com/vvatanabe/gbch/compare/v0.2.0...v0.2.1) (2019-06-13)
+
+* skip 404 error of the get pull request API (#7) [#8](https://github.com/vvatanabe/gbch/pull/8) ([vvatanabe](https://github.com/vvatanabe))
+
 ## [v0.2.0](https://github.com/vvatanabe/gbch/compare/v0.1.0...v0.2.0) (2019-06-11)
 
 * Keep the display order pull request in changelog (#5) [#6](https://github.com/vvatanabe/gbch/pull/6) ([vvatanabe](https://github.com/vvatanabe))
