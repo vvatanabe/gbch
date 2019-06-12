@@ -23,6 +23,7 @@ type Gbch struct {
 	NextVersion  string `short:"N" long:"next-version"`
 	Write        bool   `short:"w" description:"write result to file"`
 	ShowUniqueID bool   `          long:"show-uid" description:"show the unique id on nulab account"`
+	VerPrefix    string `          long:"ver-prefix" description:"custom version prefix (ex. foo-1.2.3)"`
 	ChangelogMd  string
 	// Tmpl string
 	OutStream io.Writer

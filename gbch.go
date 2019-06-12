@@ -17,9 +17,9 @@ import (
 
 	"net/url"
 
-	"github.com/Songmu/gitsemvers"
 	"github.com/pkg/errors"
 	"github.com/vvatanabe/errsgroup"
+	"github.com/vvatanabe/gitsemvers"
 	backlog "github.com/vvatanabe/go-backlog/backlog/v2"
 )
 
@@ -186,8 +186,9 @@ func (gb *Gbch) cmd(argv ...string) (string, error) {
 
 func (gb *Gbch) versions() []string {
 	sv := gitsemvers.Semvers{
-		RepoPath: gb.RepoPath,
-		GitPath:  gb.GitPath,
+		RepoPath:  gb.RepoPath,
+		GitPath:   gb.GitPath,
+		VerPrefix: gb.VerPrefix,
 	}
 	return sv.VersionStrings()
 }
