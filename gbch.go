@@ -281,20 +281,20 @@ func (gb *Gbch) mergedPRs(ctx context.Context, from, to string) (prs []*backlog.
 	for i, v := range prlogs {
 		index := i
 		prlog := v
-		g.Go(func() (err error) {
+		g.Go(func() error {
 			pr, resp, err := gb.client.PullRequests.GetPullRequest(ctx, gb.ProjectKey, gb.RepoName, prlog.num)
 			if err != nil {
 				if resp != nil && resp.StatusCode == http.StatusNotFound {
-					return
+					return nil
 				}
 				log.Println(err)
-				return
+				return err
 			}
 			if pr.Branch != prlog.branch {
-				return
+				return nil
 			}
 			prsWithNil[index] = pr
-			return
+			return nil
 		})
 	}
 	for _, e := range g.Wait() {
