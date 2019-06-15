@@ -10,5 +10,5 @@ github.com/vvatanabe/errsgroup v0.9.0 h1:l494Rl+BzCgcKaRw2+ugnAfuAl7iqvJsseN+hCX
 github.com/vvatanabe/errsgroup v0.9.0/go.mod h1:hbxfMiD/jF3W9bP/wHuxDO6GYYweWjBSQI6N2EPVoHo=
 github.com/vvatanabe/gitsemvers v0.0.2-0.20190612212218-d6a6ef8358de h1:b8Zq95u5qpGDMU1a96OpJHYCcpv1ujXjPrbLaSUzBBo=
 github.com/vvatanabe/gitsemvers v0.0.2-0.20190612212218-d6a6ef8358de/go.mod h1:YFrWgu/ORU1zrCDsW7Yi3xEAB92dniLCN4ZJ3oiUh4s=
-github.com/vvatanabe/go-backlog v0.9.3 h1:iH7I6VykaV+XOPWNHX5NZ8mKJnlUekIBIsz8ar/2C80=
-github.com/vvatanabe/go-backlog v0.9.3/go.mod h1:kbWpPxBnK8jiFbj09YicpO37HrIgOTvSGkplV6aNTcM=
+github.com/vvatanabe/go-backlog v0.9.4 h1:nq5ZOoEWOdp1vISbLrM6b72hNpfplLdrGvB12hFIo98=
+github.com/vvatanabe/go-backlog v0.9.4/go.mod h1:kbWpPxBnK8jiFbj09YicpO37HrIgOTvSGkplV6aNTcM=
