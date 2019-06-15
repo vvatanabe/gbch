@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.3.1](https://github.com/vvatanabe/gbch/compare/v0.3.0...v0.3.1) (2019-06-15)
+
+* update go-backlog to v0.9.4 (#11) [#12](https://github.com/vvatanabe/gbch/pull/12) ([vvatanabe](https://github.com/vvatanabe))
+
 ## [v0.3.0](https://github.com/vvatanabe/gbch/compare/v0.2.1...v0.3.0) (2019-06-13)
 
 * support custom version prefix (#9) [#10](https://github.com/vvatanabe/gbch/pull/10) ([vvatanabe](https://github.com/vvatanabe))
