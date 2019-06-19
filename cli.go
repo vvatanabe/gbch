@@ -18,7 +18,7 @@ type Gbch struct {
 	Latest       bool   `          long:"latest" description:"output changes between latest two semantic versioned tags"`
 	APIKey       string `          long:"apikey" description:"backlog api key"`
 	Remote       string `          long:"remote" default:"origin" description:"default remote name"`
-	Format       string `short:"F" long:"format" description:"json or markdown"`
+	Format       string `short:"F" long:"format" default:"json" description:"json or markdown or backlog"`
 	All          bool   `short:"A" long:"all" description:"output all changes"`
 	NextVersion  string `short:"N" long:"next-version"`
 	Write        bool   `short:"w" description:"write result to file"`
@@ -63,18 +63,20 @@ func (cli *CLI) Run(argv []string) int {
 }
 
 func (cli *CLI) parseArgs(args []string) (*flags.Parser, *Gbch, error) {
-	gh := &Gbch{
+	gb := &Gbch{
 		OutStream: cli.OutStream,
 	}
-	p := flags.NewParser(gh, flags.Default)
+	p := flags.NewParser(gb, flags.Default)
 	p.Usage = fmt.Sprintf("[OPTIONS]\n\nVersion: %s (rev: %s)", version, revision)
 	rest, err := p.ParseArgs(args)
-	if gh.Write {
-		gh.Format = "markdown"
-		gh.ChangelogMd = "CHANGELOG.md"
+	if gb.Write {
+		if !gb.isMDFormat() {
+			gb.Format = "markdown"
+		}
+		gb.ChangelogMd = "CHANGELOG.md"
 		if len(rest) > 0 {
-			gh.ChangelogMd = rest[0]
+			gb.ChangelogMd = rest[0]
 		}
 	}
-	return p, gh, err
+	return p, gb, err
 }

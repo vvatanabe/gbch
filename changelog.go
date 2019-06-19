@@ -19,13 +19,14 @@ type Changelog struct {
 	Sections []Section `json:"Sections"`
 }
 
-func insertNewChangelog(orig []byte, section string) string {
+func insertNewChangelog(orig []byte, section, header string) string {
 	var bf bytes.Buffer
 	lineSnr := bufio.NewScanner(bytes.NewReader(orig))
 	inserted := false
+	headerL2 := header + header + " "
 	for lineSnr.Scan() {
 		line := lineSnr.Text()
-		if !inserted && strings.HasPrefix(line, "## ") {
+		if !inserted && strings.HasPrefix(line, headerL2) {
 			bf.WriteString(section)
 			bf.WriteString("\n\n")
 			inserted = true
@@ -52,17 +53,29 @@ type Section struct {
 	ShowUniqueID bool                   `json:"-"`
 }
 
-var tmplStr = `{{$ret := . -}}
+var markdownTmplStr = `{{$ret := . -}}
 ## [{{.ToRevision}}]({{.HTMLURL}}/compare/{{.FromRevision}}...{{.ToRevision}}) ({{.ChangedAt.Format "2006-01-02"}})
 {{range .PullRequests}}
 * {{.Summary}} [#{{.Number}}]({{$ret.HTMLURL}}/pullRequests/{{.Number}}) ([{{.CreatedUser.Name}}]({{$ret.BaseURL}}/user/{{.CreatedUser.UserID}})){{if and ($ret.ShowUniqueID) (.CreatedUser.NulabAccount)}} @{{.CreatedUser.NulabAccount.UniqueID}}{{end}}
 {{- end}}`
 
-var mdTmpl *template.Template
+var backlogTmplStr = `{{$ret := . -}}
+** [[{{.ToRevision}}:{{.HTMLURL}}/compare/{{.FromRevision}}...{{.ToRevision}}]] ({{.ChangedAt.Format "2006-01-02"}}){{range .PullRequests}}
+- {{.Summary}} [[[#{{.Number}}:{{$ret.HTMLURL}}/pullRequests/{{.Number}}]]] ([[{{.CreatedUser.Name}}:{{$ret.BaseURL}}/user/{{.CreatedUser.UserID}}]]){{if and ($ret.ShowUniqueID) (.CreatedUser.NulabAccount)}} @{{.CreatedUser.NulabAccount.UniqueID}}{{end}}
+{{- end}}`
+
+var (
+	mdTmpl *template.Template
+	blTmpl *template.Template
+)
 
 func init() {
 	var err error
-	mdTmpl, err = template.New("md-changelog").Parse(tmplStr)
+	mdTmpl, err = template.New("md-changelog").Parse(markdownTmplStr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	blTmpl, err = template.New("bl-changelog").Parse(backlogTmplStr)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -71,6 +84,15 @@ func init() {
 func (rs Section) toMkdn() (string, error) {
 	var b bytes.Buffer
 	err := mdTmpl.Execute(&b, rs)
+	if err != nil {
+		return "", err
+	}
+	return b.String(), nil
+}
+
+func (rs Section) toBacklog() (string, error) {
+	var b bytes.Buffer
+	err := blTmpl.Execute(&b, rs)
 	if err != nil {
 		return "", err
 	}

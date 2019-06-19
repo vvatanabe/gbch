@@ -56,17 +56,28 @@ func (gb *Gbch) runAll(ctx context.Context) error {
 		prevRev = rev
 	}
 
-	if gb.Format != "markdown" { // json
+	if !gb.isMDFormat() { // json
 		encoder := json.NewEncoder(gb.OutStream)
 		encoder.SetIndent("", "  ")
 		return encoder.Encode(chlog)
 	}
 	results := make([]string, len(chlog.Sections))
-	for i, v := range chlog.Sections {
-		results[i], _ = v.toMkdn()
+	if gb.Format == "backlog" {
+		for i, v := range chlog.Sections {
+			results[i], _ = v.toBacklog()
+		}
+	} else {
+		for i, v := range chlog.Sections {
+			results[i], _ = v.toMkdn()
+		}
 	}
+
 	if gb.Write {
-		content := "# Changelog\n\n" + strings.Join(results, "\n\n")
+		h := "#"
+		if gb.Format == "backlog" {
+			h = "*"
+		}
+		content := h + " Changelog\n\n" + strings.Join(results, "\n\n")
 		if err := ioutil.WriteFile(gb.ChangelogMd, []byte(content), 0644); err != nil {
 			return err
 		}
@@ -96,25 +107,37 @@ func (gb *Gbch) run(ctx context.Context) error {
 		r.ToRevision = gb.NextVersion
 	}
 
-	if gb.Format != "markdown" { // json
+	if !gb.isMDFormat() { // json
 		encoder := json.NewEncoder(gb.OutStream)
 		encoder.SetIndent("", "  ")
 		return encoder.Encode(r)
+
 	}
-	str, err := r.toMkdn()
+
+	var str string
+	if gb.Format == "backlog" {
+		str, err = r.toBacklog()
+	} else {
+		str, err = r.toMkdn()
+	}
+
 	if err != nil {
 		return err
 	}
 	if gb.Write {
+		h := "#"
+		if gb.Format == "backlog" {
+			h = "*"
+		}
 		content := ""
 		if exists(gb.ChangelogMd) {
 			byt, err := ioutil.ReadFile(gb.ChangelogMd)
 			if err != nil {
 				return err
 			}
-			content = insertNewChangelog(byt, str)
+			content = insertNewChangelog(byt, str, h)
 		} else {
-			content = "# Changelog\n\n" + str + "\n"
+			content = h + " Changelog\n\n" + str + "\n"
 		}
 		if err := ioutil.WriteFile(gb.ChangelogMd, []byte(content), 0644); err != nil {
 			return err
@@ -127,7 +150,9 @@ func (gb *Gbch) run(ctx context.Context) error {
 
 func (gb *Gbch) initialize(ctx context.Context) error {
 	if gb.Write {
-		gb.Format = "markdown"
+		if !gb.isMDFormat() {
+			gb.Format = "markdown"
+		}
 		if gb.ChangelogMd == "" {
 			gb.ChangelogMd = "CHANGELOG.md"
 		}
@@ -361,6 +386,10 @@ func (gb *Gbch) getChangedAt(rev string) (time.Time, error) {
 		return time.Time{}, errors.Wrap(err, "failed to get changed at from git revision. ParseInt failed")
 	}
 	return time.Unix(i, 0), nil
+}
+
+func (gb *Gbch) isMDFormat() bool {
+	return gb.Format == "markdown" || gb.Format == "backlog"
 }
 
 func isHTTP(str string) bool {
