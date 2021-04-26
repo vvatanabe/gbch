@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.4.2](https://github.com/vvatanabe/gbch/compare/v0.4.1...v0.4.2) (2021-04-26)
+
+* Go 1.16 (#22) [#23](https://github.com/vvatanabe/gbch/pull/23) ([vvatanabe](https://github.com/vvatanabe))
+* Handle rate limit errors in the Backlog API (#20) [#21](https://github.com/vvatanabe/gbch/pull/21) ([vvatanabe](https://github.com/vvatanabe))
+
 ## [v0.4.1](https://github.com/vvatanabe/gbch/compare/v0.4.0...v0.4.1) (2020-04-16)
 
 * update go version 1.14.x (#17) [#19](https://github.com/vvatanabe/gbch/pull/19) ([vvatanabe](https://github.com/vvatanabe))
