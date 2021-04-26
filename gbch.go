@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"regexp"
@@ -15,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	"net/url"
+	"github.com/vvatanabe/goretryer/exponential"
 
 	"github.com/pkg/errors"
 	"github.com/vvatanabe/errsgroup"
@@ -295,7 +296,18 @@ func (gb *Gbch) spaceDomain(remoteURL *remoteURL) string {
 	return fmt.Sprintf("%s.%s", spaceKey, domain)
 }
 
-var errsGroupLimitSize = errsgroup.LimitSize(4)
+var (
+	maxConcurrency    = errsgroup.LimitSize(3)
+	errTooManyRequest = errors.New("too many request to backlog api")
+	retryer           = exponential.Retryer{
+		NumMaxRetries: 3,
+		MinRetryDelay: time.Minute + time.Second,
+		MaxRetryDelay: time.Minute + (3 * time.Second),
+	}
+	isErrorRetryable = func(err error) bool {
+		return err == errTooManyRequest
+	}
+)
 
 func (gb *Gbch) mergedPRs(ctx context.Context, from, to string) (prs []*backlog.PullRequest, err error) {
 	prlogs, err := gb.mergedPRLogs(from, to)
@@ -303,23 +315,37 @@ func (gb *Gbch) mergedPRs(ctx context.Context, from, to string) (prs []*backlog.
 		return
 	}
 	prsWithNil := make([]*backlog.PullRequest, len(prlogs))
-	g := errsgroup.NewGroup(errsGroupLimitSize)
+	g := errsgroup.NewGroup(maxConcurrency)
+
 	for i, v := range prlogs {
 		index := i
 		prlog := v
 		g.Go(func() error {
-			pr, resp, err := gb.client.PullRequests.GetPullRequest(ctx, gb.ProjectKey, gb.RepoName, prlog.num)
-			if err != nil {
-				if resp != nil && resp.StatusCode == http.StatusNotFound {
-					return nil
+			var backlogPR *backlog.PullRequest
+			_, err := retryer.Do(ctx, func(ctx context.Context) error {
+				pr, resp, err := gb.client.PullRequests.GetPullRequest(ctx, gb.ProjectKey, gb.RepoName, prlog.num)
+				if err != nil {
+					if resp != nil {
+						switch resp.StatusCode {
+						case http.StatusNotFound:
+							return nil
+						case http.StatusTooManyRequests:
+							return errTooManyRequest
+						}
+					}
+					log.Println(err)
+					return err
 				}
-				log.Println(err)
+				backlogPR = pr
+				return nil
+			}, isErrorRetryable)
+			if err != nil {
 				return err
 			}
-			if pr.Branch != prlog.branch {
+			if backlogPR.Branch != prlog.branch {
 				return nil
 			}
-			prsWithNil[index] = pr
+			prsWithNil[index] = backlogPR
 			return nil
 		})
 	}
