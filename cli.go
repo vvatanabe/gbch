@@ -11,19 +11,20 @@ import (
 
 // Gbch is main application struct
 type Gbch struct {
-	RepoPath     string `short:"r" long:"repo" default:"." description:"git repository path"`
-	GitPath      string `short:"g" long:"git" default:"git" description:"git path"`
-	From         string `short:"f" long:"from" description:"git commit revision range start from"`
-	To           string `short:"t" long:"to" description:"git commit revision range end to"`
-	Latest       bool   `          long:"latest" description:"output changes between latest two semantic versioned tags"`
-	APIKey       string `          long:"apikey" description:"backlog api key"`
-	Remote       string `          long:"remote" default:"origin" description:"default remote name"`
-	Format       string `short:"F" long:"format" default:"json" description:"json or markdown or backlog"`
-	All          bool   `short:"A" long:"all" description:"output all changes"`
-	NextVersion  string `short:"N" long:"next-version"`
-	Write        bool   `short:"w" description:"write result to file"`
-	ShowUniqueID bool   `          long:"show-uid" description:"show the unique id on nulab account"`
-	VerPrefix    string `          long:"ver-prefix" description:"custom version prefix (ex. foo-1.2.3)"`
+	RepoPath     string   `short:"r" long:"repo" default:"." description:"git repository path"`
+	GitPath      string   `short:"g" long:"git" default:"git" description:"git path"`
+	From         string   `short:"f" long:"from" description:"git commit revision range start from"`
+	To           string   `short:"t" long:"to" description:"git commit revision range end to"`
+	Latest       bool     `          long:"latest" description:"output changes between latest two semantic versioned tags"`
+	APIKey       string   `          long:"apikey" description:"backlog api key"`
+	Remote       string   `          long:"remote" default:"origin" description:"default remote name"`
+	Format       string   `short:"F" long:"format" default:"json" description:"json or markdown or backlog"`
+	All          bool     `short:"A" long:"all" description:"output all changes"`
+	NextVersion  string   `short:"N" long:"next-version"`
+	Write        bool     `short:"w" description:"write result to file"`
+	ShowUniqueID bool     `          long:"show-uid" description:"show the unique id on nulab account"`
+	VerPrefix    string   `          long:"ver-prefix" description:"custom version prefix (ex. foo-1.2.3)"`
+	TargetPaths  []string `short:"p" long:"target-paths" description:"filter by specific path in the repository"`
 	ChangelogMd  string
 	// Tmpl string
 	OutStream io.Writer
